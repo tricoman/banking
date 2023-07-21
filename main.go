@@ -1,6 +1,8 @@
 package main
 
-import "banking/app"
+import (
+	"github.com/tricoman/banking/app"
+)
 
 func main() {
 	app.Start()

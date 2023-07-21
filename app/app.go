@@ -1,23 +1,24 @@
 package app
 
 import (
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
 
 const greetEndpoint = "/greet"
-const getAllCustomersEndpoint = "/customers"
+const customersEndpoint = "/customers"
+const getCustomerEndpoint = "/customers/{customer_id:[0-9]+}"
 
 func Start() {
-	defineRoutes()
-	log.Fatal(startServer())
+	startServer()
 }
 
-func defineRoutes() {
-	http.HandleFunc(greetEndpoint, greetHandler)
-	http.HandleFunc(getAllCustomersEndpoint, getAllCustomersHandler)
-}
-
-func startServer() error {
-	return http.ListenAndServe("localhost:8000", nil)
+func startServer() {
+	router := mux.NewRouter()
+	router.HandleFunc(greetEndpoint, greetHandler).Methods(http.MethodGet)
+	router.HandleFunc(customersEndpoint, getAllCustomersHandler).Methods(http.MethodGet)
+	router.HandleFunc(customersEndpoint, createCustomerHandler).Methods(http.MethodPost)
+	router.HandleFunc(getCustomerEndpoint, getCustomerById).Methods(http.MethodGet)
+	log.Fatal(http.ListenAndServe("localhost:8000", router))
 }
