@@ -12,9 +12,47 @@ type CustomerRepositoryDB struct {
 	client *sql.DB
 }
 
+func (r CustomerRepositoryDB) FindBy(id string) (*Customer, *errs.AppError) {
+	findAllSql := "SELECT customer_id, name, city, zipcode, date_of_birth, status FROM customers WHERE customer_id = ?"
+	row := r.client.QueryRow(findAllSql, id)
+
+	var customer Customer
+	err := row.Scan(
+		&customer.Id,
+		&customer.Name,
+		&customer.City,
+		&customer.ZipCode,
+		&customer.DateOfBirth,
+		&customer.Status,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errs.NewNotFoundError("customer not found")
+		} else {
+			log.Println("Error scanning customer " + err.Error())
+			return nil, errs.NewUnexpectedError("unexpected DB error")
+		}
+	}
+	return &customer, nil
+}
+
 func (r CustomerRepositoryDB) FindAll() ([]Customer, *errs.AppError) {
 	findAllSql := "SELECT customer_id, name, city, zipcode, date_of_birth, status FROM customers"
-	rows, err := r.client.Query(findAllSql)
+	return queryDBForCustomers(r, findAllSql)
+}
+
+func (r CustomerRepositoryDB) FindAllActive() ([]Customer, *errs.AppError) {
+	findActiveSQL := "SELECT customer_id, name, city, zipcode, date_of_birth, status FROM customers WHERE status = 1"
+	return queryDBForCustomers(r, findActiveSQL)
+}
+
+func (r CustomerRepositoryDB) FindAllInactive() ([]Customer, *errs.AppError) {
+	findInactiveSQL := "SELECT customer_id, name, city, zipcode, date_of_birth, status FROM customers WHERE status = 0"
+	return queryDBForCustomers(r, findInactiveSQL)
+}
+
+func queryDBForCustomers(r CustomerRepositoryDB, query string) ([]Customer, *errs.AppError) {
+	rows, err := r.client.Query(query)
 
 	if err != nil {
 		errorMessage := "Error while querying customer table :" + err.Error()
@@ -43,30 +81,6 @@ func (r CustomerRepositoryDB) FindAll() ([]Customer, *errs.AppError) {
 	}
 
 	return customers, nil
-}
-
-func (r CustomerRepositoryDB) FindBy(id string) (*Customer, *errs.AppError) {
-	findAllSql := "SELECT customer_id, name, city, zipcode, date_of_birth, status FROM customers WHERE customer_id = ?"
-	row := r.client.QueryRow(findAllSql, id)
-
-	var customer Customer
-	err := row.Scan(
-		&customer.Id,
-		&customer.Name,
-		&customer.City,
-		&customer.ZipCode,
-		&customer.DateOfBirth,
-		&customer.Status,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errs.NewNotFoundError("customer not found")
-		} else {
-			log.Println("Error scanning customer " + err.Error())
-			return nil, errs.NewUnexpectedError("unexpected DB error")
-		}
-	}
-	return &customer, nil
 }
 
 func NewCustomerRepositoryDB() CustomerRepositoryDB {

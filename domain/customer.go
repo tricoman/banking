@@ -12,6 +12,8 @@ type Customer struct {
 }
 
 type CustomerRepository interface {
-	FindAll() ([]Customer, *errs.AppError)
 	FindBy(id string) (*Customer, *errs.AppError)
+	FindAll() ([]Customer, *errs.AppError)
+	FindAllActive() ([]Customer, *errs.AppError)
+	FindAllInactive() ([]Customer, *errs.AppError)
 }

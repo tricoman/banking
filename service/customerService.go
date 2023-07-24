@@ -6,20 +6,32 @@ import (
 )
 
 type CustomerService interface {
-	GetAllCustomers() ([]domain.Customer, *errs.AppError)
 	GetCustomer(id string) (*domain.Customer, *errs.AppError)
+	GetAllCustomers() ([]domain.Customer, *errs.AppError)
+	GetAllCustomersBy(status string) ([]domain.Customer, *errs.AppError)
 }
 
 type DefaultCustomerService struct {
 	repository domain.CustomerRepository
 }
 
+func (s DefaultCustomerService) GetCustomer(id string) (*domain.Customer, *errs.AppError) {
+	return s.repository.FindBy(id)
+}
+
 func (s DefaultCustomerService) GetAllCustomers() ([]domain.Customer, *errs.AppError) {
 	return s.repository.FindAll()
 }
 
-func (s DefaultCustomerService) GetCustomer(id string) (*domain.Customer, *errs.AppError) {
-	return s.repository.FindBy(id)
+func (s DefaultCustomerService) GetAllCustomersBy(status string) ([]domain.Customer, *errs.AppError) {
+	switch status {
+	case "active":
+		return s.repository.FindAllActive()
+	case "inactive":
+		return s.repository.FindAllInactive()
+	default:
+		return nil, errs.NewBadRequestError("Invalid status received: " + status)
+	}
 }
 
 func NewCustomerService(repository domain.CustomerRepository) DefaultCustomerService {
