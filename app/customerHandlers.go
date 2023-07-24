@@ -2,31 +2,22 @@ package app
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"github.com/gorilla/mux"
 	"github.com/tricoman/banking/service"
 	"net/http"
 )
-
-type Customer struct {
-	Name    string `json:"full_name" xml:"name"`
-	City    string `json:"city" xml:"city"`
-	ZipCode string `json:"zip_code" xml:"zipcode"`
-}
 
 type CustomerHandlers struct {
 	service service.CustomerService
 }
 
 func (ch *CustomerHandlers) getAllCustomers(writer http.ResponseWriter, request *http.Request) {
-	customers, _ := ch.service.GetAllCustomers()
+	customers, err := ch.service.GetAllCustomers()
 
-	if request.Header.Get("Content-Type") == "application/xml" {
-		writer.Header().Add("Content-Type", "application/xml")
-		xml.NewEncoder(writer).Encode(customers)
+	if err != nil {
+		writeResponse(writer, err.Code, err.AsMessage())
 	} else {
-		writer.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(writer).Encode(customers)
+		writeResponse(writer, http.StatusOK, customers)
 	}
 }
 

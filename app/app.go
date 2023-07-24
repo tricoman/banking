@@ -2,6 +2,8 @@ package app
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/tricoman/banking/domain"
+	"github.com/tricoman/banking/service"
 	"log"
 	"net/http"
 )
@@ -16,9 +18,8 @@ func Start() {
 
 func startServer() {
 	router := mux.NewRouter()
-	router.HandleFunc(greetEndpoint, greetHandler).Methods(http.MethodGet)
-	router.HandleFunc(customersEndpoint, getAllCustomersHandler).Methods(http.MethodGet)
-	router.HandleFunc(customersEndpoint, createCustomerHandler).Methods(http.MethodPost)
-	router.HandleFunc(getCustomerEndpoint, getCustomerById).Methods(http.MethodGet)
+	customerHandlers := CustomerHandlers{service.NewCustomerService(domain.NewCustomerRepositoryDB())}
+	router.HandleFunc(customersEndpoint, customerHandlers.getAllCustomers).Methods(http.MethodGet)
+	router.HandleFunc(getCustomerEndpoint, customerHandlers.getCustomer).Methods(http.MethodGet)
 	log.Fatal(http.ListenAndServe("localhost:8000", router))
 }
