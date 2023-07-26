@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/tricoman/banking/errs"
-	"log"
+	"github.com/tricoman/banking/logger"
 	"time"
 )
 
@@ -29,7 +29,7 @@ func (r CustomerRepositoryDB) FindBy(id string) (*Customer, *errs.AppError) {
 		if err == sql.ErrNoRows {
 			return nil, errs.NewNotFoundError("customer not found")
 		} else {
-			log.Println("Error scanning customer " + err.Error())
+			logger.Error("Error scanning customer " + err.Error())
 			return nil, errs.NewUnexpectedError("unexpected DB error")
 		}
 	}
@@ -56,7 +56,7 @@ func queryDBForCustomers(r CustomerRepositoryDB, query string) ([]Customer, *err
 
 	if err != nil {
 		errorMessage := "Error while querying customer table :" + err.Error()
-		log.Println(errorMessage)
+		logger.Error(errorMessage)
 		return nil, errs.NewUnexpectedError(errorMessage)
 	}
 
@@ -74,7 +74,7 @@ func queryDBForCustomers(r CustomerRepositoryDB, query string) ([]Customer, *err
 		)
 		if err != nil {
 			errorMessage := "Error while scanning customer rows :" + err.Error()
-			log.Println(errorMessage)
+			logger.Error(errorMessage)
 			return nil, errs.NewUnexpectedError(errorMessage)
 		}
 		customers = append(customers, customer)
