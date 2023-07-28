@@ -2,10 +2,12 @@ package domain
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/tricoman/banking/errs"
 	"github.com/tricoman/banking/logger"
+	"os"
 	"time"
 )
 
@@ -56,13 +58,20 @@ func queryDBForCustomers(r CustomerRepositoryDB, query string) ([]Customer, *err
 	return customers, nil
 }
 
-func NewCustomerRepositoryDB() CustomerRepositoryDB {
-	mysqlClient, err := sqlx.Open("mysql", "root:qwerty12345@tcp(localhost:3306)/banking")
+func NewCustomerRepositoryDB(dbClient *sqlx.DB) CustomerRepositoryDB {
+	//db data "root:qwerty12345@tcp(localhost:3306)/banking"
+	dbUser := os.Getenv("BANKING_APP_DB_USER")
+	dbPassword := os.Getenv("BANKING_APP_DB_PASSWORD")
+	dbAddress := os.Getenv("BANKING_APP_DB_ADDRESS")
+	dbPort := os.Getenv("BANKING_APP_DB_PORT")
+	dbName := os.Getenv("BANKING_APP_DB_NAME")
+	dataSource := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbAddress, dbPort, dbName)
+	mysqlClient, err := sqlx.Open("mysql", dataSource)
 	if err != nil {
 		panic(err)
 	}
 	mysqlClient.SetConnMaxLifetime(time.Minute * 3)
 	mysqlClient.SetMaxOpenConns(10)
 	mysqlClient.SetMaxIdleConns(10)
-	return CustomerRepositoryDB{mysqlClient}
+	return CustomerRepositoryDB{dbClient}
 }

@@ -3,7 +3,7 @@ package app
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/tricoman/banking/domain"
+	"github.com/tricoman/banking/dto"
 	"github.com/tricoman/banking/errs"
 	"github.com/tricoman/banking/service"
 	"net/http"
@@ -14,7 +14,7 @@ type CustomerHandlers struct {
 }
 
 func (ch *CustomerHandlers) getAllCustomers(writer http.ResponseWriter, request *http.Request) {
-	var customers []domain.Customer
+	var customers []dto.CustomerResponse
 	var err *errs.AppError
 
 	if receivedStatus := request.URL.Query().Get("status"); receivedStatus != "" {
