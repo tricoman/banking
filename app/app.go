@@ -24,7 +24,8 @@ const dbNameEnvVar = "BANKING_APP_DB_NAME"
 // API routes
 const customersEndpoint = "/customers"
 const getCustomerEndpoint = "/customers/{customer_id:[0-9]+}"
-const customerAccountEndpoint = "/customers/{customer_id:[0-9]+}/account"
+const customerAccountEndpoint = "/customers/{customer_id:[0-9]+}/accounts"
+const transactionEndpoint = "/customers/{customer_id:[0-9]+}/accounts/{account_id:[0-9]+}"
 
 func Start() {
 	startServer()
@@ -36,11 +37,14 @@ func startServer() {
 	dbClient := initDBClient()
 	customerRepositoryDB := domain.NewCustomerRepositoryDB(dbClient)
 	accountRepositoryDB := domain.NewAccountRepositoryDB(dbClient)
+	transactionRepositoryDB := domain.NewTransactionRepositoryDB(dbClient)
 	customerHandlers := CustomerHandlers{service.NewCustomerService(customerRepositoryDB)}
 	accountHandlers := AccountHandlers{service.NewAccountService(accountRepositoryDB)}
+	transactionHandlers := TransactionHandlers{service.NewTransactionService(transactionRepositoryDB)}
 	router.HandleFunc(customersEndpoint, customerHandlers.getAllCustomers).Methods(http.MethodGet)
 	router.HandleFunc(getCustomerEndpoint, customerHandlers.getCustomer).Methods(http.MethodGet)
 	router.HandleFunc(customerAccountEndpoint, accountHandlers.newAccount).Methods(http.MethodPost)
+	router.HandleFunc(transactionEndpoint, transactionHandlers.newTransaction).Methods(http.MethodPost)
 	address := os.Getenv(serverAddressEnvVar)
 	port := os.Getenv(serverPortEnvVar)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%s", address, port), router))

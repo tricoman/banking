@@ -22,15 +22,15 @@ func (h AccountHandlers) newAccount(w http.ResponseWriter, r *http.Request) {
 	}
 	if err == nil {
 		request.CustomerId = customerId
-		h.createAccount(w, request)
+		createAccount(w, request, h.service)
 	}
 }
 
-func (h AccountHandlers) createAccount(w http.ResponseWriter, r dto.NewAccountRequest) {
-	account, err := h.service.NewAccount(r)
+func createAccount(w http.ResponseWriter, r dto.NewAccountRequest, s service.AccountService) {
+	accountResponse, err := s.NewAccount(r)
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	} else {
-		writeResponse(w, http.StatusCreated, account)
+		writeResponse(w, http.StatusCreated, accountResponse)
 	}
 }
